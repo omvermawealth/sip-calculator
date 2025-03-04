@@ -7,51 +7,99 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #222;
+            color: white;
             text-align: center;
             margin: 50px;
         }
         .container {
-            max-width: 400px;
-            margin: auto;
+            background: #333;
             padding: 20px;
-            border: 1px solid #ccc;
             border-radius: 10px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            margin: auto;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
         }
-        input, button {
+        input, select, button {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background-color: orange;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>SIP Calculator</h2>
-        <label>Monthly Investment (₹):</label>
-        <input type="number" id="monthlyInvestment" placeholder="Enter amount" required>
-        
-        <label>Annual Interest Rate (%):</label>
-        <input type="number" id="interestRate" placeholder="Enter rate" required>
-        
-        <label>Investment Duration (Years):</label>
-        <input type="number" id="years" placeholder="Enter years" required>
-        
-        <button onclick="calculateSIP()">Calculate</button>
-        
-        <h3>Future Value: ₹<span id="result">0</span></h3>
-    </div>
+
+<div class="container">
+    <h2>SIP Calculator</h2>
     
-    <script>
-        function calculateSIP() {
-            let p = parseFloat(document.getElementById('monthlyInvestment').value);
-            let r = parseFloat(document.getElementById('interestRate').value) / 100 / 12;
-            let n = parseFloat(document.getElementById('years').value) * 12;
-            
-            let futureValue = p * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
-            
-            document.getElementById('result').innerText = futureValue.toFixed(2);
+    <label>Monthly Investment (₹):</label>
+    <input type="number" id="amount" placeholder="Enter amount" required>
+
+    <label>Annual Interest Rate (%):</label>
+    <input type="number" id="rate" placeholder="Enter rate" required>
+
+    <label>Investment Duration (Years):</label>
+    <input type="number" id="years" placeholder="Enter years" required>
+
+    <label>Adjust for Inflation?</label>
+    <select id="adjustInflation" onchange="toggleInflationInput()">
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+    </select>
+
+    <div id="inflationInput" style="display: none;">
+        <label>Expected Inflation Rate (%):</label>
+        <input type="number" id="inflationRate" placeholder="Enter inflation rate">
+    </div>
+
+    <button onclick="calculateSIP()">Calculate</button>
+
+    <h3>Total Invested: ₹<span id="investedAmount">0</span></h3>
+    <h3>Future Value: ₹<span id="result">0</span></h3>
+</div>
+
+<script>
+    function toggleInflationInput() {
+        let adjust = document.getElementById("adjustInflation").value;
+        document.getElementById("inflationInput").style.display = adjust === "Yes" ? "block" : "none";
+    }
+
+    function calculateSIP() {
+        let P = parseFloat(document.getElementById("amount").value);
+        let r = parseFloat(document.getElementById("rate").value) / 100 / 12;
+        let n = parseFloat(document.getElementById("years").value) * 12;
+        let adjustInflation = document.getElementById("adjustInflation").value;
+        let inflationRate = adjustInflation === "Yes" ? parseFloat(document.getElementById("inflationRate").value) / 100 : 0;
+
+        if (isNaN(P) || isNaN(r) || isNaN(n) || (adjustInflation === "Yes" && isNaN(inflationRate))) {
+            alert("Please enter valid inputs!");
+            return;
         }
-    </script>
+
+        // Calculate total invested amount
+        let totalInvested = P * n;
+
+        // SIP Future Value Formula
+        let FV = P * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+
+        // Adjusting for Inflation
+        if (adjustInflation === "Yes") {
+            FV = FV / Math.pow(1 + inflationRate, n / 12);
+        }
+
+        // Update results on UI
+        document.getElementById("investedAmount").innerText = totalInvested.toFixed(2);
+        document.getElementById("result").innerText = FV.toFixed(2);
+    }
+</script>
+
 </body>
 </html>
